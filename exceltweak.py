@@ -4,15 +4,20 @@ import string
 import re
 import sys
 
-def removeMetrics(check, ws):
-    doomlist = []
-    metricColumn = 0
-
+def findMetric(ws):
     # Find the column with metric types
     for row in ws.iter_rows(min_col = 1, min_row = tablerow, max_col= columnCount, max_row = tablerow):
         for cell in row:
             if cell.value == 'Metric_Type':
                 metricColumn = cell.column
+                return metricColumn
+
+
+def removeMetrics(check, ws):
+    doomlist = []
+
+    # Find the column with metric types
+    metricColumn = findMetric(ws)
 
     # Go through each row to check its metric type
     for row in ws.iter_rows(min_col = metricColumn, min_row=tablerow, max_col = metricColumn, max_row = rowCount):
@@ -36,12 +41,19 @@ def sheetsplit(ws):
 
 def tablesplit(ws):
     print('tablesplit!')
+    metricColumn = findMetric(ws)
     for row in ws.iter_rows(min_col = 1, min_row = tablerow, max_col = columnCount, max_row = rowCount):
-        for cell in row: 
-            col = cell.column
-            col = string.ascii_uppercase[col]
-            newrow = cell.row - tablerow + rowCount
-            ws[f'{col}{newrow}'] = cell.value
+        print(row)
+        if row[metricColumn].value == 'Unique_Item_Requests':
+            continue
+        else:
+            for cell in row: 
+                col = cell.column
+                col = string.ascii_uppercase[col]
+                newrow = cell.row - tablerow + rowCount
+                ws[f'{col}{newrow}'] = cell.value
+            if row[metricColumn].value == 'Total_Item_Requests':
+                ws.delete_rows(cell.row)
 
 
 
