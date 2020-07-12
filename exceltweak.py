@@ -1,5 +1,5 @@
-from openpyxl import Workbook
-from openpyxl import load_workbook
+from openpyxl import Workbook, load_workbook
+from openpyxl.styles import Font
 import re
 import sys
 
@@ -42,6 +42,13 @@ ws['B3'].value = rp
 cr = ws['B4'].value
 cr = re.sub('T.*', '', cr)
 ws['B4'].value = cr
+
+# Style metadata area
+
+for row in ws.iter_rows(min_row = 1, max_col = 2, max_row = 4): 
+    for cell in row:
+        cell.font = Font(name = 'Calibri', size = 12, bold = True)
+        # background color...
 
 
 # End
