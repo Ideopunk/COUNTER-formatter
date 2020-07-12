@@ -63,7 +63,8 @@ dataGoodbyes = ['Publisher', 'Publisher_ID', 'DOI', 'Proprietary_ID', 'URI']
 dataGoodbyeColumns = []
 
 # find the table columns we don't want
-for count, column in enumerate(ws.iter_cols(min_row=6, max_col=24, max_row=6, values_only=True), 1):
+columnCount = ws.max_column
+for count, column in enumerate(ws.iter_cols(min_row=6, max_col=columnCount, max_row=6, values_only=True), 1):
     # Reach the end of the metadata section
     try: 
         column = ''.join(column)
@@ -76,38 +77,54 @@ for count, column in enumerate(ws.iter_cols(min_row=6, max_col=24, max_row=6, va
 for column in reversed(dataGoodbyeColumns):
     ws.delete_cols(column)
 
-# find the 'total' column and move it to the end. 
+# reinsert metadata
+print(keepMetadatas)
+for row in ws.iter_rows(min_col=2, min_row=1, max_col=2, max_row=4):
+    for cell in row: 
+        cell.value = keepMetadatas.pop(0)
+        cell.font = Font(name = 'Calibri', size = 12, bold = True)
+
+# find the 'total' column and move it to the end. Along the way, change the titles of columns. 
 origcolumn = ''
 movecolumn = ''
 breaker = 0
-for count, column in enumerate(ws.iter_cols(min_col=1, min_row=6, max_col=24, max_row=6, values_only=True), 1):
+monthcheck = 0
+
+# + 1 to give space for the reinsertion
+columnCount = ws.max_column + 1
+for count, column in enumerate(ws.iter_cols(min_col=1, min_row=6, max_col=columnCount, max_row=6, values_only=True), 1):
     for cell in column:
         print(cell)
         if cell == 'Reporting_Period_Total':
+            # cell = 'YTD Total'
             print('total')
             print(count)
             origcolumn = count
             columnletter = string.ascii_uppercase[origcolumn - 1]
             print(columnletter)
+            monthcheck = 1
         if cell == None:
             movement = count - origcolumn
             print(movement)
             print(f'{columnletter}:{columnletter}')
             ws.move_range(f'{columnletter}1:{columnletter}{rowCount}', cols = movement)
-            # Delete original
+            
+            # Delete the original column 
             ws.delete_cols(origcolumn)
             breaker = 1
             break
+        if monthcheck == 1:
+            print(cell)
+            # cell = cell.replace('-2020', '')
     if breaker == 1:
         break
 
-# reinsert metadata
-print(keepMetadatas)
-
-for row in ws.iter_rows(min_col=2, min_row=1, max_col=2, max_row=4):
-    for cell in row: 
-        cell.value = keepMetadatas.pop(0)
-        cell.font = Font(name = 'Calibri', size = 12, bold = True)
+columnCount = ws.max_column
+for column in ws.iter_cols(min_col = 1, min_row = 6, max_col = columnCount, max_row = 6):
+    for cell in column:
+        cell.value = cell.value.replace('-2020', '')
+        print(cell.value)
+        cell.value = cell.value.replace('Reporting_Period_Total', 'YTD Total')
 
 # END
 #wb.save(sys.argv[2])
