@@ -4,6 +4,39 @@ import string
 import re
 import sys
 
+def removeMetrics(check):
+    doomlist = []
+    metricColumn = 0
+
+    for row in ws.iter_rows(min_col = 1, min_row = tablerow, max_col= columnCount, max_row= tablerow):
+        for cell in row:
+            if cell.value == 'Metric_Type':
+                metricColumn = cell.column
+
+    for row in ws.iter_rows(min_col = metricColumn, min_row=tablerow, max_col = metricColumn, max_row= rowCount):
+        for cell in row:
+            if cell.value == check:
+                doomlist.append(cell.row)
+    
+    for row in reversed(doomlist):
+        ws.delete_rows(row)
+
+def sheetsplit(ws):
+    print('sheetsplit!')
+    wb.copy_worksheet(ws)
+    ws.title = 'TR J1 Unique COUNTER 5'
+    removeMetrics('Total_Item_Requests')
+    ws = wb['Sheet1 Copy']
+    ws.title = 'TR J1 Total COUNTER 5'
+    removeMetrics('Unique_Title_Requests')
+
+
+def tablesplit():
+    print('tablesplit!')
+
+
+
+
 # if len(sys.argv) != 3:
 #    print("Please include the name of the file being tweaked and a file name where the output should go")
 
@@ -51,7 +84,6 @@ ws['B4'].value = cr
 #DATA SECTION
 
 rowCount = ws.max_row
-print(rowCount)
 
 #keep the metadata that's going to be wiped when columns are removed, reinsert later...
 keepMetadatas = []
@@ -89,7 +121,6 @@ for column in reversed(dataGoodbyeColumns):
     ws.delete_cols(column)
 
 # reinsert metadata
-print(keepMetadatas)
 for row in ws.iter_rows(min_col=2, min_row=1, max_col=2, max_row=4):
     for cell in row: 
         cell.value = keepMetadatas.pop(0)
@@ -105,37 +136,55 @@ monthcheck = 0
 columnCount = ws.max_column + 1
 for count, column in enumerate(ws.iter_cols(min_col=1, min_row=tablerow, max_col=columnCount, max_row=tablerow, values_only=True), 1):
     for cell in column:
-        print(cell)
         if cell == 'Reporting_Period_Total':
             # cell = 'YTD Total'
-            print('total')
-            print(count)
             origcolumn = count
             columnletter = string.ascii_uppercase[origcolumn - 1]
-            print(columnletter)
-            monthcheck = 1
         if cell == None:
             movement = count - origcolumn
-            print(movement)
-            print(f'{columnletter}:{columnletter}')
             ws.move_range(f'{columnletter}1:{columnletter}{rowCount}', cols = movement)
             
             # Delete the original column 
             ws.delete_cols(origcolumn)
             breaker = 1
             break
-        if monthcheck == 1:
-            print(cell)
-            # cell = cell.replace('-2020', '')
     if breaker == 1:
         break
 
+
+# henceforth, this is how wide this table is! 
 columnCount = ws.max_column
+
+# switch headers to what we like
 for column in ws.iter_cols(min_col = 1, min_row = tablerow, max_col = columnCount, max_row = tablerow):
     for cell in column:
         cell.value = cell.value.replace('-2020', '')
-        print(cell.value)
         cell.value = cell.value.replace('Reporting_Period_Total', 'YTD Total')
+
+
+# add row of sums! And bold them! 
+ws.insert_rows(tablerow + 1)
+rowCount = ws.max_row # henceforth, this is how tall the table is!
+
+for count, column in enumerate(ws.iter_cols(min_col = origcolumn, min_row = tablerow + 1, max_col = columnCount, max_row = tablerow), 5):
+    print(origcolumn, tablerow, columnCount)
+    print(column)
+    columnletter = string.ascii_uppercase[count]
+    cellcode = f'{columnletter}{tablerow + 1}'
+    ws[cellcode].value = f"=SUM({columnletter}{tablerow + 2}:{columnletter}{rowCount})"
+    ws[cellcode].font = Font(name = 'Calibri', size = 12, bold = True)
+
+# add 'title' to first cell in that row
+ws[f'A{tablerow + 1}'].value = 'Total'
+ws[f'A{tablerow + 1}'].font = Font(name = 'Calibri', size = 12, bold = True)
+
+# separate totals and uniques
+
+if (rowCount - tablerow) > 20:
+    sheetsplit(ws)
+else: 
+    tablesplit(ws)
+
 
 # END
 #wb.save(sys.argv[2])
