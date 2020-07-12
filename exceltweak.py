@@ -62,9 +62,20 @@ for Bcell in ws.iter_rows(min_col=2, min_row=1, max_col=2, max_row=4, values_onl
 dataGoodbyes = ['Publisher', 'Publisher_ID', 'DOI', 'Proprietary_ID', 'URI']
 dataGoodbyeColumns = []
 
+
+# find header row of table to be used through rest of program as variable
+
+tablerow = ''
+for count, row in enumerate(ws.iter_rows(min_col=1, min_row=1, max_col=1, max_row=25, values_only=True), 1):
+    for cell in row:
+        if cell == 'Title':
+            tablerow = count
+
+
+
 # find the table columns we don't want
 columnCount = ws.max_column
-for count, column in enumerate(ws.iter_cols(min_row=6, max_col=columnCount, max_row=6, values_only=True), 1):
+for count, column in enumerate(ws.iter_cols(min_row=tablerow, max_col=columnCount, max_row=tablerow, values_only=True), 1):
     # Reach the end of the metadata section
     try: 
         column = ''.join(column)
@@ -92,7 +103,7 @@ monthcheck = 0
 
 # + 1 to give space for the reinsertion
 columnCount = ws.max_column + 1
-for count, column in enumerate(ws.iter_cols(min_col=1, min_row=6, max_col=columnCount, max_row=6, values_only=True), 1):
+for count, column in enumerate(ws.iter_cols(min_col=1, min_row=tablerow, max_col=columnCount, max_row=tablerow, values_only=True), 1):
     for cell in column:
         print(cell)
         if cell == 'Reporting_Period_Total':
@@ -120,7 +131,7 @@ for count, column in enumerate(ws.iter_cols(min_col=1, min_row=6, max_col=column
         break
 
 columnCount = ws.max_column
-for column in ws.iter_cols(min_col = 1, min_row = 6, max_col = columnCount, max_row = 6):
+for column in ws.iter_cols(min_col = 1, min_row = tablerow, max_col = columnCount, max_row = tablerow):
     for cell in column:
         cell.value = cell.value.replace('-2020', '')
         print(cell.value)
