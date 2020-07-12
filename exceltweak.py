@@ -8,16 +8,19 @@ def removeMetrics(check):
     doomlist = []
     metricColumn = 0
 
+    # Find the column with metric types
     for row in ws.iter_rows(min_col = 1, min_row = tablerow, max_col= columnCount, max_row= tablerow):
         for cell in row:
             if cell.value == 'Metric_Type':
                 metricColumn = cell.column
 
+    # Go through each row to check its metric type
     for row in ws.iter_rows(min_col = metricColumn, min_row=tablerow, max_col = metricColumn, max_row= rowCount):
         for cell in row:
             if cell.value == check:
                 doomlist.append(cell.row)
     
+    # Destroy the rows we don't want. 
     for row in reversed(doomlist):
         ws.delete_rows(row)
 
@@ -28,7 +31,7 @@ def sheetsplit(ws):
     removeMetrics('Total_Item_Requests')
     ws = wb['Sheet1 Copy']
     ws.title = 'TR J1 Total COUNTER 5'
-    removeMetrics('Unique_Title_Requests')
+    removeMetrics('Unique_Item_Requests')
 
 
 def tablesplit():
