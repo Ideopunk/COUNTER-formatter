@@ -4,18 +4,18 @@ import string
 import re
 import sys
 
-def removeMetrics(check):
+def removeMetrics(check, ws):
     doomlist = []
     metricColumn = 0
 
     # Find the column with metric types
-    for row in ws.iter_rows(min_col = 1, min_row = tablerow, max_col= columnCount, max_row= tablerow):
+    for row in ws.iter_rows(min_col = 1, min_row = tablerow, max_col= columnCount, max_row = tablerow):
         for cell in row:
             if cell.value == 'Metric_Type':
                 metricColumn = cell.column
 
     # Go through each row to check its metric type
-    for row in ws.iter_rows(min_col = metricColumn, min_row=tablerow, max_col = metricColumn, max_row= rowCount):
+    for row in ws.iter_rows(min_col = metricColumn, min_row=tablerow, max_col = metricColumn, max_row = rowCount):
         for cell in row:
             if cell.value == check:
                 doomlist.append(cell.row)
@@ -28,15 +28,20 @@ def sheetsplit(ws):
     print('sheetsplit!')
     wb.copy_worksheet(ws)
     ws.title = 'TR J1 Unique COUNTER 5'
-    removeMetrics('Total_Item_Requests')
+    removeMetrics('Total_Item_Requests', ws)
     ws = wb['Sheet1 Copy']
     ws.title = 'TR J1 Total COUNTER 5'
-    removeMetrics('Unique_Item_Requests')
+    removeMetrics('Unique_Item_Requests', ws)
 
 
-def tablesplit():
+def tablesplit(ws):
     print('tablesplit!')
-
+    for row in ws.iter_rows(min_col = 1, min_row = tablerow, max_col = columnCount, max_row = rowCount):
+        for cell in row: 
+            col = cell.column
+            col = string.ascii_uppercase[col]
+            newrow = cell.row - tablerow + rowCount
+            ws[f'{col}{newrow}'] = cell.value
 
 
 
