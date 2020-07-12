@@ -12,5 +12,26 @@ ws = wb.active
 print(ws.title)
 print(ws['B1'].value)
 
+# METADATA SECTION
 
+metadataKeeps = ['Report_Name', 'Report_ID', 'Reporting_Period', 'Created']
+metadataGoodbyes = []
+
+for count, row in enumerate(ws.rows, 1):
+    # Reach the end of the metadata section
+    if row[0].value == None:
+        break
+    if row[0].value not in metadataKeeps:
+        metadataGoodbyes.append(count)
+    print(row[0].value)
+
+print(metadataGoodbyes)
+
+for row in reversed(metadataGoodbyes):
+    ws.delete_rows(row)
+
+
+
+
+# End
 wb.save('Output.xlsx')
