@@ -1,5 +1,6 @@
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font
+import string
 import re
 import sys
 
@@ -49,6 +50,9 @@ ws['B4'].value = cr
 
 #DATA SECTION
 
+rowCount = ws.max_row
+print(rowCount)
+
 #keep the metadata that's going to be wiped when columns are removed, reinsert later...
 keepMetadatas = []
 for Bcell in ws.iter_rows(min_col=2, min_row=1, max_col=2, max_row=4, values_only=True):
@@ -72,9 +76,33 @@ for count, column in enumerate(ws.iter_cols(min_row=6, max_col=24, max_row=6, va
 for column in reversed(dataGoodbyeColumns):
     ws.delete_cols(column)
 
+# find the 'total' column and move it to the end. 
+origcolumn = ''
+movecolumn = ''
+breaker = 0
+for count, column in enumerate(ws.iter_cols(min_col=1, min_row=6, max_col=24, max_row=6, values_only=True), 1):
+    for cell in column:
+        print(cell)
+        if cell == 'Reporting_Period_Total':
+            print('total')
+            print(count)
+            origcolumn = count
+            columnletter = string.ascii_uppercase[origcolumn - 1]
+            print(columnletter)
+        if cell == None:
+            movement = count - origcolumn
+            print(movement)
+            print(f'{columnletter}:{columnletter}')
+            ws.move_range(f'{columnletter}1:{columnletter}{rowCount}', cols = movement)
+            # Delete original
+            ws.delete_cols(origcolumn)
+            breaker = 1
+            break
+    if breaker == 1:
+        break
+
 # reinsert metadata
 print(keepMetadatas)
-#keepMetadatas.reverse()
 
 for row in ws.iter_rows(min_col=2, min_row=1, max_col=2, max_row=4):
     for cell in row: 
