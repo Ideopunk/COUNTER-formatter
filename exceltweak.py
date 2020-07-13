@@ -29,6 +29,7 @@ def removeMetrics(check, ws):
     for row in reversed(doomlist):
         ws.delete_rows(row)
 
+
 def sheetsplit(ws):
     print('sheetsplit!')
     wb.copy_worksheet(ws)
@@ -38,13 +39,14 @@ def sheetsplit(ws):
         ws.title = 'TR J1 Unique COUNTER 5'
     removeMetrics('Total_Item_Requests', ws)
 
-    # switch to other sheet
+    # switch to other
     ws = wb['Sheet1 Copy']
     if wbtype == 'TR_B1':
         ws.title = 'TR B1 Total COUNTER 5'
+        removeMetrics('Unique_Title_Requests', ws)
     else:
         ws.title = 'TR J1 Total COUNTER 5'
-    removeMetrics('Unique_Item_Requests', ws)
+        removeMetrics('Unique_Item_Requests', ws)
 
 
 def tablesplit(ws):
