@@ -32,10 +32,18 @@ def removeMetrics(check, ws):
 def sheetsplit(ws):
     print('sheetsplit!')
     wb.copy_worksheet(ws)
-    ws.title = 'TR J1 Unique COUNTER 5'
+    if wbtype == 'TR_B1':
+        ws.title = 'TR B1 Unique COUNTER 5'
+    else:        
+        ws.title = 'TR J1 Unique COUNTER 5'
     removeMetrics('Total_Item_Requests', ws)
+
+    # switch to other sheet
     ws = wb['Sheet1 Copy']
-    ws.title = 'TR J1 Total COUNTER 5'
+    if wbtype == 'TR_B1':
+        ws.title = 'TR B1 Total COUNTER 5'
+    else:
+        ws.title = 'TR J1 Total COUNTER 5'
     removeMetrics('Unique_Item_Requests', ws)
 
 
@@ -62,8 +70,9 @@ def tablesplit(ws):
 
 # wb = load_workbook(sys.argv[1])
 
-wb = load_workbook('TR_J1_Input.xlsx')
+wb = load_workbook('TR_B1_Input.xlsx')
 ws = wb.active
+wbtype = ws['B2'].value
 
 # METADATA SECTION
 
@@ -111,7 +120,15 @@ for Bcell in ws.iter_rows(min_col=2, min_row=1, max_col=2, max_row=4, values_onl
     Bcell = ''.join(Bcell)
     keepMetadatas.append(Bcell)
 
+
+
+# Columns to be removed. 
 dataGoodbyes = ['Publisher', 'Publisher_ID', 'DOI', 'Proprietary_ID', 'URI']
+
+if wbtype == 'TR_B1':
+    dataGoodbyes.append('Print_ISSN')
+    dataGoodbyes.append('Online_ISSN')
+
 dataGoodbyeColumns = []
 
 
@@ -187,8 +204,6 @@ ws.insert_rows(tablerow + 1)
 rowCount = ws.max_row # henceforth, this is how tall the table is!
 
 for count, column in enumerate(ws.iter_cols(min_col = origcolumn, min_row = tablerow + 1, max_col = columnCount, max_row = tablerow), 5):
-    print(origcolumn, tablerow, columnCount)
-    print(column)
     columnletter = string.ascii_uppercase[count]
     cellcode = f'{columnletter}{tablerow + 1}'
     ws[cellcode].value = f"=SUM({columnletter}{tablerow + 2}:{columnletter}{rowCount})"
